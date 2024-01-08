@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".MeetingActivity">
+
+    <TextView
+        android:id="@+id/tvMeetingId"
+        style="@style/TextAppearance.AppCompat.Display1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Meeting Id" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvParticipants"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/btnMic"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="fitCenter"
+            android:layout_marginVertical="20dp"
+            android:src="@drawable/microphone_on"
+            android:contentDescription="mic" />
+
+        <ImageButton
+            android:id="@+id/btnLeave"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="fitCenter"
+            android:layout_marginVertical="20dp"
+            android:src="@drawable/call_cut"
+            android:contentDescription="leave" />
+
+        <ImageButton
+            android:id="@+id/btnCamera"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="fitCenter"
+            android:layout_marginVertical="20dp"
+            android:src="@drawable/video_camera_on"
+            android:contentDescription="camera " />
+
+<!--        <ImageButton-->
+<!--            android:id="@+id/CameraFlip"-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="60dp"-->
+<!--            android:scaleType="fitCenter"-->
+<!--            android:layout_marginVertical="20dp"-->
+<!--            android:src="@drawable/cameraflip"-->
+<!--            android:contentDescription="CameraFlip" />-->
+
+    </LinearLayout>
+
+</LinearLayout>
+
+
+
+
