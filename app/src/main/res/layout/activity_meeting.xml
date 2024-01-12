@@ -1,70 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
     tools:context=".MeetingActivity">
 
-    <TextView
-        android:id="@+id/tvMeetingId"
-        style="@style/TextAppearance.AppCompat.Display1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Meeting Id" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvParticipants"
+    <live.videosdk.rtc.android.VideoView
+        android:id="@+id/remoteView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="30dp"
+        android:visibility="visible" />
+
+    <live.videosdk.rtc.android.VideoView
+        android:id="@+id/localView"
+        android:layout_width="100dp"
+        android:layout_height="120dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="40dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="120dp"
+        android:paddingBottom="100dp"
+        android:visibility="visible" />
 
     <LinearLayout
+        android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="30dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:background = "@color/purple_500">
+
+        <TextView
+            android:id="@+id/etParticipantName"
+            style="@style/TextAppearance.AppCompat.Display1"
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="20dp"
+            android:contextClickable="true"
+            android:text="Candidate"
+            android:textColor="@android:color/white"
+            android:visibility="visible"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/tvMeetingId"
+            style="@style/TextAppearance.AppCompat.Display1"
+            android:layout_width="250dp"
+            android:layout_height="20dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:autoSizeTextType="uniform"
+            android:contextClickable="true"
+            android:text="Meeting ID : "
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:visibility="visible" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true">
+
+        <ImageButton
+            android:id="@+id/audio_Output"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginHorizontal="7dp"
+            android:layout_marginVertical="20dp"
+            android:contentDescription="Audio"
+            android:scaleType="fitCenter"
+            android:src="@drawable/speaker" />
 
         <ImageButton
             android:id="@+id/btnMic"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="fitCenter"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginHorizontal="7dp"
             android:layout_marginVertical="20dp"
-            android:src="@drawable/microphone_on"
-            android:contentDescription="mic" />
+            android:contentDescription="mic"
+            android:scaleType="fitCenter"
+            android:src="@drawable/microphone_on" />
 
         <ImageButton
             android:id="@+id/btnLeave"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="fitCenter"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginHorizontal="7dp"
             android:layout_marginVertical="20dp"
-            android:src="@drawable/call_cut"
-            android:contentDescription="leave" />
+            android:contentDescription="leave"
+            android:scaleType="fitCenter"
+            android:src="@drawable/call_cut" />
 
         <ImageButton
             android:id="@+id/btnCamera"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="fitCenter"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginHorizontal="7dp"
             android:layout_marginVertical="20dp"
-            android:src="@drawable/video_camera_on"
-            android:contentDescription="camera " />
+            android:contentDescription="camera "
+            android:scaleType="fitCenter"
+            android:src="@drawable/video_camera_on" />
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/CameraFlip"-->
-<!--            android:layout_width="60dp"-->
-<!--            android:layout_height="60dp"-->
-<!--            android:scaleType="fitCenter"-->
-<!--            android:layout_marginVertical="20dp"-->
-<!--            android:src="@drawable/cameraflip"-->
-<!--            android:contentDescription="CameraFlip" />-->
+        <ImageButton
+            android:id="@+id/btnCameraFlip"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginHorizontal="7dp"
+            android:layout_marginVertical="20dp"
+            android:contentDescription="camera "
+            android:scaleType="fitCenter"
+            android:src="@drawable/cameraflip" />
+
 
     </LinearLayout>
 
-</LinearLayout>
+    <!--    <Spinner-->
+    <!--        android:id="@+id/spinnerVideoQuality"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:entries="@array/video_quality_options"-->
+    <!--        android:visibility="visible"-->
+    <!--        android:overScrollMode="always"/>-->
+
+    <!--    <ImageButton-->
+    <!--        android:id="@+id/btnSettings"-->
+    <!--        android:layout_width="55dp"-->
+    <!--        android:layout_height="55dp"-->
+    <!--        android:layout_above="@+id/linearLayout"-->
+    <!--        android:layout_marginHorizontal="7dp"-->
+    <!--        android:layout_marginVertical="20dp"-->
+    <!--        android:layout_marginBottom="561dp"-->
+    <!--        android:contentDescription="Camera settings"-->
+    <!--        android:scaleType="fitCenter"-->
+    <!--        android:src="@drawable/settings_icon" />-->
 
 
-
-
+</RelativeLayout>

@@ -29,7 +29,7 @@ public class JoinActivity extends AppCompatActivity {
     };
 
     //Replace with the token you generated from the VideoSDK Dashboard
-    String sampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlrZXkiOiIwMzVjNmIxNC04MzQ2LTRkYzgtYjBmMC1kNGQ4ZWQwOTMyODAiLCJwZXJtaXNzaW9ucyI6WyJhbGxvd19qb2luIl0sImlhdCI6MTcwNDE5MjEzMSwiZXhwIjoxNzA0Nzk2OTMxfQ.UQfYw8XZBE9IrLFMzsp7jutwT4Wyn0NNDW1tuxUij5M";
+    String sampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlrZXkiOiIwMzVjNmIxNC04MzQ2LTRkYzgtYjBmMC1kNGQ4ZWQwOTMyODAiLCJwZXJtaXNzaW9ucyI6WyJhbGxvd19qb2luIl0sImlhdCI6MTcwNDgwODM0NCwiZXhwIjoxODYyNTk2MzQ0fQ.3lxWgCRv-o55JU_iMDAaW9JtPDVYXL4-VJ6kst349lc";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
