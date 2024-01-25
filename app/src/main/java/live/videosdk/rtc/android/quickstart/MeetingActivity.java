@@ -174,7 +174,8 @@ public class MeetingActivity extends AppCompatActivity  {
         @Override
         public void onMeetingLeft() {
             Log.d("#meeting", "onMeetingLeft()");
-            meeting = null;
+            meeting.end();
+
             if (!isDestroyed()) finish();
         }
 
@@ -193,6 +194,8 @@ public class MeetingActivity extends AppCompatActivity  {
 //            remoteView.removeTrack();
             participant.removeEventListener(participantEventListener);
             ( (TextView) findViewById(R.id.etParticipantName)).setText("");
+            meeting.end();
+
         }
 
         @Override
@@ -248,28 +251,28 @@ public class MeetingActivity extends AppCompatActivity  {
         if (meeting != null && meeting.getLocalParticipant() != null) {
             meeting.getLocalParticipant().addEventListener(new ParticipantEventListener() {
 
-                                                               @Override
-                                                               public void onStreamEnabled(Stream stream) {
-                                                                   if (stream.getKind().equalsIgnoreCase("video")) {
-                                                                       localTrack = (VideoTrack) stream.getTrack();
-                                                                       localView.setVisibility(View.VISIBLE);
-                                                                       localView.setZOrderMediaOverlay(true);
-                                                                       localView.addTrack(localTrack);
-                                                                   }
-                                                               }
+               @Override
+               public void onStreamEnabled(Stream stream) {
+                   if (stream.getKind().equalsIgnoreCase("video")) {
+                       localTrack = (VideoTrack) stream.getTrack();
+                       localView.setVisibility(View.VISIBLE);
+                       localView.setZOrderMediaOverlay(true);
+                       localView.addTrack(localTrack);
+                   }
+               }
 
 
-                                                               @Override
-                                                               public void onStreamDisabled(Stream stream) {
-                                                                   if (stream.getKind().equalsIgnoreCase("video")) {
-                                                                       VideoTrack track = (VideoTrack) stream.getTrack();
-                                                                       if (track != null) localTrack = null;
-                                                                       localView.removeTrack();
+               @Override
+               public void onStreamDisabled(Stream stream) {
+                   if (stream.getKind().equalsIgnoreCase("video")) {
+                       VideoTrack track = (VideoTrack) stream.getTrack();
+                       if (track != null) localTrack = null;
+                       localView.removeTrack();
 
 
-                                                                   }
-                                                               }
-                                                           }
+                   }
+               }
+           }
             );
         }
     }

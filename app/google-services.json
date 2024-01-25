@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "621659279538",
+    "firebase_url": "https://videocall-video-sdk-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "videocall-video-sdk",
+    "storage_bucket": "videocall-video-sdk.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:621659279538:android:38b9a919c69300ee5279ab",
+        "android_client_info": {
+          "package_name": "live.videosdk.rtc.android.quickstart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRv3T8l8EpW-R5FjeJJenWsHYUOkJVTWc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
