@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import live.videosdk.rtc.android.quickstart.repository.MainRepository;
+import live.videosdk.rtc.android.quickstart.utils.StatusType;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -25,6 +26,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v->{
             mainRepository.login(userName.getText() .toString(),()->{
                 startActivity(new Intent(LoginActivity.this , JoinActivity.class));
+                mainRepository.setMyStatus(StatusType.Idle);
             });
         });
 

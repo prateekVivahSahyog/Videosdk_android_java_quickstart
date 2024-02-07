@@ -11,11 +11,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
-import java.util.Objects;
-
 import live.videosdk.rtc.android.quickstart.utils.DataModel;
 import live.videosdk.rtc.android.quickstart.utils.ErrorCallBack;
 import live.videosdk.rtc.android.quickstart.utils.NewEventCallBack;
+import live.videosdk.rtc.android.quickstart.utils.StatusType;
 import live.videosdk.rtc.android.quickstart.utils.SuccessCallBack;
 
 public class FirebaseClient {
@@ -24,14 +23,66 @@ public class FirebaseClient {
     private final DatabaseReference dbref = FirebaseDatabase.getInstance().getReference();
     private String currentUsername;
     private static final String LATEST_EVENTS_FIELD_NAME = "latest_event";
+    private static final String  MY_STATUS = "my_status";
 
     public  void login(String username, SuccessCallBack callBack){
         dbref.child(username).setValue("").addOnCompleteListener(task->{
            currentUsername = username;
            callBack.onSuccess();
         });
+
+
     }
-    public  void sendMessageToOtherUser(DataModel dataModel, ErrorCallBack errorCallBack){
+
+    public  void SetStatus(StatusType currentStatus){
+        dbref.child(currentUsername).child(MY_STATUS).setValue(gson.toJson(currentStatus));
+    }
+
+    public void sendResponseToMe(DataModel dataModel){
+        dbref.child(dataModel.getTarget()).child(LATEST_EVENTS_FIELD_NAME)
+                .setValue(gson.toJson(dataModel));
+    }
+
+    public void sendMessageToOtherUser(DataModel dataModel, StatusCallback CallBack) {
+        Log.d("xxx", "IN FirebaseClient inside sendMessageToOtherUser ");
+        dbref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child(dataModel.getTarget()).exists()) {
+                    // Check the status of the user
+                    String statusJson = dataSnapshot.child(dataModel.getTarget()).child(MY_STATUS).getValue(String.class);
+                    StatusType status = gson.fromJson(statusJson, StatusType.class);
+                    if (status == StatusType.Idle) {
+                        // Send the signal to the other user
+                        dbref.child(dataModel.getTarget()).child(LATEST_EVENTS_FIELD_NAME)
+                                .setValue(gson.toJson(dataModel));
+
+                    } else if(status == StatusType.Busy) {
+                        Log.d("xxx", "User status is not ideal");
+                       CallBack.onUserBusy();
+                    }
+                    else if(status == StatusType.Offline) {
+                        Log.d("xxx", "User does not exist");
+                        CallBack.onUserOffline();
+                    }
+
+                } else {
+                    Log.d("xxx", "User does not exist");
+                    CallBack.onError();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.d("xxx", "errorCallBack at onCancelled: sendMessageToOtherUser");
+                CallBack.onError();
+            }
+        });
+    }
+
+
+
+    public  void sendResponseEnded(DataModel dataModel, ErrorCallBack errorCallBack){
         Log.d("xxx", "IN FirebaseClient inside sendMessageToOtherUser ");
         dbref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -55,30 +106,8 @@ public class FirebaseClient {
             }
         });
     }
-//    public  void observeIncomingLatestEvent(NewEventCallBack callBack){
-//
-//        dbref.child(currentUsername).child(LATEST_EVENTS_FIELD_NAME)
-//                .addValueEventListener(
-//                        new ValueEventListener() {
-//                            @Override
-//                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                                try{
-//                                    String data = Objects.requireNonNull(dataSnapshot.getValue()).toString();
-//                                    DataModel dataModel = gson.fromJson(data,DataModel.class);
-//                                    callBack.onNewEventReceived(dataModel);
-//                                }catch (Exception e){
-//                                    Log.d("xxx","FirebaseClient ->observerIncomingEvent -> onDataChange " + e);
-//
-//                                }
-//                            }
-//
-//                            @Override
-//                            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                            }
-//                        }
-//                );
-//    }
+
+
 public void observeIncomingLatestEvent(NewEventCallBack callBack) {
     if (currentUsername != null && !currentUsername.isEmpty()) {
         dbref.child(currentUsername).child(LATEST_EVENTS_FIELD_NAME)
@@ -107,9 +136,5 @@ public void observeIncomingLatestEvent(NewEventCallBack callBack) {
         Log.d("xxx", "FirebaseClient ->observerIncomingEvent -> currentUsername is null or empty");
     }
 }
-
-
-
-
 
 }

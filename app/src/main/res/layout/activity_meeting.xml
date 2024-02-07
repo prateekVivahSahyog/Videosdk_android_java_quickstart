@@ -82,6 +82,15 @@
             android:contentDescription="Audio"
             android:scaleType="fitCenter"
             android:src="@drawable/speaker" />
+<!--        <ImageButton-->
+<!--            android:id="@+id/chatBtn"-->
+<!--            android:layout_width="55dp"-->
+<!--            android:layout_height="55dp"-->
+<!--            android:layout_marginHorizontal="7dp"-->
+<!--            android:layout_marginVertical="20dp"-->
+<!--            android:contentDescription="Audio"-->
+<!--            android:scaleType="fitCenter"-->
+<!--            android:src="@drawable/chat_button" />-->
 
         <ImageButton
             android:id="@+id/btnMic"
@@ -126,25 +135,64 @@
 
     </LinearLayout>
 
-    <!--    <Spinner-->
-    <!--        android:id="@+id/spinnerVideoQuality"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:entries="@array/video_quality_options"-->
-    <!--        android:visibility="visible"-->
-    <!--        android:overScrollMode="always"/>-->
+<!--    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:orientation="vertical"-->
+<!--        android:padding="16dp"-->
+<!--        android:id="@id/chatBox">-->
 
-    <!--    <ImageButton-->
-    <!--        android:id="@+id/btnSettings"-->
-    <!--        android:layout_width="55dp"-->
-    <!--        android:layout_height="55dp"-->
-    <!--        android:layout_above="@+id/linearLayout"-->
-    <!--        android:layout_marginHorizontal="7dp"-->
-    <!--        android:layout_marginVertical="20dp"-->
-    <!--        android:layout_marginBottom="561dp"-->
-    <!--        android:contentDescription="Camera settings"-->
-    <!--        android:scaleType="fitCenter"-->
-    <!--        android:src="@drawable/settings_icon" />-->
+<!--        <ImageButton-->
+<!--            android:id="@+id/closeButton"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:contentDescription="send button"-->
+<!--            android:scaleType="fitCenter"-->
+<!--            android:src="@drawable/close"-->
+<!--            android:layout_gravity="end"-->
+<!--            />-->
 
+<!--        <ScrollView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:layout_weight="1" >-->
+
+<!--            <LinearLayout-->
+<!--                android:id="@+id/chatLayout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical" >-->
+
+<!--            </LinearLayout>-->
+
+<!--        </ScrollView>-->
+
+<!--        <LinearLayout-->
+<!--            android:id="@+id/inputLayout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal" >-->
+
+<!--            <EditText-->
+<!--                android:id="@+id/inputText"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_gravity="center_vertical"-->
+<!--                android:hint="Type your message here" />-->
+
+<!--            <ImageButton-->
+<!--                android:id="@+id/sendBtn"-->
+<!--                android:layout_width="50dp"-->
+<!--                android:layout_height="45dp"-->
+<!--                android:layout_marginHorizontal="7dp"-->
+<!--                android:layout_marginVertical="20dp"-->
+<!--                android:layout_gravity="center_vertical"-->
+<!--                android:contentDescription="send button"-->
+<!--                android:scaleType="fitXY"-->
+<!--                android:src="@drawable/send_button" />-->
+
+<!--        </LinearLayout>-->
+<!--    </LinearLayout>-->
 
 </RelativeLayout>

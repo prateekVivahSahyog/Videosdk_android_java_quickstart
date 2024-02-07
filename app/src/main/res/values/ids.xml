@@ -2,4 +2,5 @@
 <resources>
     <item name="participantView2" type="id" />
     <item name="participantView1" type="id" />
+<!--    <item name="chatBox" type="id">chatbox</item>-->
 </resources>
