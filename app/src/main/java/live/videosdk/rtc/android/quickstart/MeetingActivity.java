@@ -20,31 +20,41 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONObject;
 import org.webrtc.VideoTrack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import live.videosdk.rtc.android.CustomStreamTrack;
 import live.videosdk.rtc.android.Meeting;
@@ -56,15 +66,13 @@ import live.videosdk.rtc.android.lib.PubSubMessage;
 import live.videosdk.rtc.android.listeners.MeetingEventListener;
 import live.videosdk.rtc.android.listeners.ParticipantEventListener;
 import live.videosdk.rtc.android.listeners.PubSubMessageListener;
+import live.videosdk.rtc.android.model.PubSubPublishOptions;
 import live.videosdk.rtc.android.quickstart.repository.MainRepository;
 //import live.videosdk.rtc.android.quickstart.utils.HelperClass;
 import live.videosdk.rtc.android.quickstart.utils.StatusType;
 
-public class MeetingActivity extends AppCompatActivity  {
-    // Constants
-    private static final String TAG = "#meeting";
 
-    // Instance Variables
+public class MeetingActivity extends AppCompatActivity  {
     private Meeting meeting;
     private boolean micEnabled = true;
     private boolean webcamEnabled = true;
@@ -74,14 +82,42 @@ public class MeetingActivity extends AppCompatActivity  {
     private BluetoothAdapter bluetoothAdapter;
     private  String RemoteName ="";
     private String LocalName = "";
-    private Boolean ChatboxOpen = false;
-
-    //    private Participant participantRemote;
-//    private Participant participantLocal;
     private VideoTrack participantTrack = null;
     private VideoTrack localTrack = null;
     private boolean useBluetooth = true;
-    private PubSubMessageListener chatListener;
+    LinearLayout chatMessagesLayout;
+    MessagesAdapter messagesAdapter;
+    RecyclerView recyclerView;
+    LinearLayout buttonLayout;
+    List<PubSubMessage> pubSubMessageList;
+    Boolean chatBoxOpen = false;
+
+    Context context;
+    InputMethodManager keyboard;
+
+
+    PubSubMessageListener pubSubMessageListener = new PubSubMessageListener() {
+
+        @Override
+        public void onMessageReceived(PubSubMessage message) {
+            // New message received
+            pubSubMessageList.add(message);
+            // Notify the adapter when the dataset changes
+            if(messagesAdapter==null){
+                messagesAdapter = new MessagesAdapter(context, (ArrayList<PubSubMessage>) pubSubMessageList, RemoteName, LocalName);
+            }
+
+            if(chatBoxOpen) {
+                messagesAdapter.notifyDataSetChanged();
+                recyclerView.scrollToPosition(messagesAdapter.getItemCount() - 1);
+            }
+
+
+            Log.d("xyz",message.getMessage() + " at " + message.getTimestamp());
+
+        }
+    };
+
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -103,12 +139,19 @@ public class MeetingActivity extends AppCompatActivity  {
 
         // Register Bluetooth receiver
         registerBluetoothReceiver();
+
+        context = this;
+
+
     }
 
     private void initializeUI() {
         localView = findViewById(R.id.localView);
         remoteView = findViewById(R.id.remoteView);
-        // Other UI initialization...
+        buttonLayout = findViewById(R.id.linearLayout);
+        chatMessagesLayout = findViewById(R.id.chatBox);
+        keyboard = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
     }
 
     private void initializeAudioAndBluetooth() {
@@ -150,8 +193,6 @@ public class MeetingActivity extends AppCompatActivity  {
                 customTracks
         );
 
-
-
         // Add event listener for meeting events
         if (meeting != null) {
             meeting.addEventListener(meetingEventListener);
@@ -162,25 +203,16 @@ public class MeetingActivity extends AppCompatActivity  {
             meeting.join();
         }
 
-        // Set meeting ID text
-
-        String meetingId = getIntent().getStringExtra("meetingId");
-        String meetingText = "Meeting ID : "+ meetingId;
-        ((TextView) findViewById(R.id.tvMeetingId)).setText(meetingText);
-
-
-        // Copy meeting ID to clipboard
-        //copyMeetingIdToClipboard(meetingId);
     }
 
-    private void copyMeetingIdToClipboard(String meetingId) {
-        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Meeting ID", meetingId);
-        if (clipboardManager != null) {
-            clipboardManager.setPrimaryClip(clip);
-            Toast.makeText(this, "Meeting link copied to clipboard", Toast.LENGTH_LONG).show();
-        }
-    }
+//    private void copyMeetingIdToClipboard(String meetingId) {
+//        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+//        ClipData clip = ClipData.newPlainText("Meeting ID", meetingId);
+//        if (clipboardManager != null) {
+//            clipboardManager.setPrimaryClip(clip);
+//            Toast.makeText(this, "Meeting link copied to clipboard", Toast.LENGTH_LONG).show();
+//        }
+//    }
 
     private final MeetingEventListener meetingEventListener = new MeetingEventListener() {
 
@@ -188,25 +220,7 @@ public class MeetingActivity extends AppCompatActivity  {
         public void onMeetingJoined() {
             Log.d("#meeting", "onMeetingJoined()");
             setLocalListeners();
-//            chatListener = new PubSubMessageListener() {
-//
-//                @Override
-//                public void onMessageReceived(PubSubMessage pubSubMessage) {
-//                    if (!pubSubMessage.getSenderId().equals(meeting.getLocalParticipant().getId())) {
-//                        View parentLayout = findViewById(android.R.id.content);
-//                        Snackbar snackbar =
-//                                Snackbar.make(parentLayout, pubSubMessage.getSenderName() + " says: " +
-//                                                pubSubMessage.getMessage(), Snackbar.LENGTH_SHORT)
-//                                        .setDuration(2000);
-//                        View snackbarView = snackbar.getView();
-//                        HelperClass.setSnackBarStyle(snackbarView, 0);
-//                        snackbar.getView().setOnClickListener(view -> snackbar.dismiss());
-//                        snackbar.show();
-//                    }
-//                }
-//            };
-//
-//            meeting.pubSub.subscribe("CHAT", chatListener);
+             pubSubMessageList =meeting.pubSub.subscribe("CHAT", pubSubMessageListener);
 
         }
 
@@ -214,7 +228,7 @@ public class MeetingActivity extends AppCompatActivity  {
         public void onMeetingLeft() {
             Log.d("#meeting", "onMeetingLeft()");
             meeting.end();
-
+            meeting.pubSub.unsubscribe("CHAT", pubSubMessageListener);
             if (!isDestroyed()) finish();
         }
 
@@ -230,7 +244,6 @@ public class MeetingActivity extends AppCompatActivity  {
         @Override
         public void onParticipantLeft(Participant participant) {
             Toast.makeText(MeetingActivity.this, participant.getDisplayName() + " left", Toast.LENGTH_SHORT).show();
-//            remoteView.removeTrack();
             participant.removeEventListener(participantEventListener);
             ( (TextView) findViewById(R.id.etParticipantName)).setText("");
             meeting.end();
@@ -270,7 +283,6 @@ public class MeetingActivity extends AppCompatActivity  {
                     VideoTrack track = (VideoTrack) stream.getTrack();
                     if (track != null) participantTrack = null;
                     remoteView.removeTrack();
-                    //  remoteView.setVisibility(View.GONE);
                 }
             }
 
@@ -307,8 +319,6 @@ public class MeetingActivity extends AppCompatActivity  {
                        VideoTrack track = (VideoTrack) stream.getTrack();
                        if (track != null) localTrack = null;
                        localView.removeTrack();
-
-
                    }
                }
            }
@@ -337,181 +347,90 @@ public class MeetingActivity extends AppCompatActivity  {
         }
     };
 
+
+    private void sendMessage(String msg, Runnable callback) {
+        PubSubPublishOptions publishOptions = new PubSubPublishOptions();
+        publishOptions.setPersist(true);
+
+        // Sending the Message using the publish method
+        meeting.pubSub.publish("CHAT", msg, publishOptions);
+
+        // Execute the callback after sending the message
+        if (callback != null) {
+            callback.run();
+        }
+    }
+
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void displayMessages(Context context, RecyclerView recyclerView) {
+
+        // Create an instance of MessagesAdapter
+        messagesAdapter = new MessagesAdapter(context, (ArrayList<PubSubMessage>) pubSubMessageList, RemoteName, LocalName);
+
+
+        // Set the adapter to your RecyclerView
+        recyclerView.setAdapter(messagesAdapter);
+
+        // Set layout manager to your RecyclerView (assuming LinearLayoutManager, you can change accordingly)
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+
+        messagesAdapter.notifyDataSetChanged();
+
+        recyclerView.scrollToPosition(messagesAdapter.getItemCount() - 1);
+
+    }
+
+    private void setChatButton() {
+
+        ImageButton btnChat = findViewById(R.id.chatBtn);
+        ImageButton sendBtn = findViewById(R.id.sendBtn);
+        ImageButton CloseBtn = findViewById(R.id.closeButton);
+        EditText msg = findViewById(R.id.inputText);
+        recyclerView = findViewById(R.id.recyclerView);
+
+        btnChat.setOnClickListener(view -> {
+
+            chatBoxOpen = true;
+            Log.d("xyz", "chat button pressed");
+//            remoteView.setVisibility(View.GONE);
+//            localView.setVisibility(View.GONE);
+            buttonLayout.setVisibility(View.GONE);
+            chatMessagesLayout.setVisibility(View.VISIBLE);
+            displayMessages(this,recyclerView);
+
+        });
+
+        sendBtn.setOnClickListener(v1 -> {
+            Log.d("xyz", "Send button pressed");
+            sendMessage(msg.getText().toString(), () -> {
+                msg.setText(null);
+            });
+        });
+
+        CloseBtn.setOnClickListener(v2 -> {
+            chatBoxOpen = false;
+            Log.d("xyz", "close button pressed");
+            chatMessagesLayout.setVisibility(View.GONE);
+            buttonLayout.setVisibility(View.VISIBLE);
+//            remoteView.setVisibility(View.VISIBLE);
+//            localView.setVisibility(View.VISIBLE);
+         // keyboard.hideSoftInputFromWindow(Objects.requireNonNull(getCurrentFocus()).getWindowToken(), 0);
+        });
+    }
+
+
+
     private void setActionListeners() {
         setMicButtonListener();
         setCameraButtonListener();
         setCameraFlipButtonListener();
         setLeaveButtonListener();
         setAudioButtonListener();
-       // setChatButton();
-        //setVideoQuality();
-
+        setChatButton();
     }
 
-    //    private void  setVideoQuality(){
-//        Spinner spinner = findViewById(R.id.spinnerVideoQuality);
-//        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.video_quality_options, android.R.layout.simple_spinner_item);
-//        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//        spinner.setAdapter(adapter);
-//        spinner.setOnItemSelectedListener();
-//    }
 
-//    private void setChatButton(){
-//        ImageButton btnChat = findViewById(R.id.chatBtn);
-//
-//        btnChat.setOnClickListener(v->{
-//            if (meeting != null) {
-//                openChat();
-//            }
-//        });
-//
-//    }
-
-//    @SuppressLint("ClickableViewAccessibility")
-//    public void openChat() {
-//        RecyclerView messageRcv;
-//        ImageView close;
-//        bottomSheetDialog = new BottomSheetDialog(this);
-//        View v3 = LayoutInflater.from(getApplicationContext()).inflate(R.layout.chat, findViewById(R.id.layout_chat));
-//        bottomSheetDialog.setContentView(v3);
-//
-//        messageRcv = v3.findViewById(R.id.messageRcv);
-//        messageRcv.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-//
-//        RelativeLayout.LayoutParams lp =
-//                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, getWindowHeight() / 2);
-//        messageRcv.setLayoutParams(lp);
-//
-//        BottomSheetBehavior.BottomSheetCallback mBottomSheetCallback
-//                = new BottomSheetBehavior.BottomSheetCallback() {
-//            @Override
-//            public void onStateChanged(@NonNull View bottomSheet,
-//                                       @BottomSheetBehavior.State int newState) {
-//                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-//                    RelativeLayout.LayoutParams lp =
-//                            new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, getWindowHeight() / 2);
-//                    messageRcv.setLayoutParams(lp);
-//                } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-//                    RelativeLayout.LayoutParams lp =
-//                            new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-//                    messageRcv.setLayoutParams(lp);
-//                }
-//
-//            }
-//
-//            @Override
-//            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-//            }
-//        };
-//
-//        bottomSheetDialog.getBehavior().addBottomSheetCallback(mBottomSheetCallback);
-//
-//        etmessage = v3.findViewById(R.id.etMessage);
-//        etmessage.setOnTouchListener(new View.OnTouchListener() {
-//
-//            public boolean onTouch(View view, MotionEvent event) {
-//                // TODO Auto-generated method stub
-//                if (view.getId() == R.id.etMessage) {
-//                    view.getParent().requestDisallowInterceptTouchEvent(true);
-//                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
-//                        case MotionEvent.ACTION_UP:
-//                            view.getParent().requestDisallowInterceptTouchEvent(false);
-//                            break;
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//
-//        ImageButton btnSend = v3.findViewById(R.id.sendBtn);
-//        btnSend.setEnabled(false);
-//        etmessage.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View v, boolean hasFocus) {
-//                if (hasFocus) {
-//                    etmessage.setHint("");
-//                }
-//            }
-//        });
-//
-//        etmessage.setVerticalScrollBarEnabled(true);
-//        etmessage.setScrollbarFadingEnabled(false);
-//
-//        etmessage.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                if (!etmessage.getText().toString().trim().isEmpty()) {
-//                    btnSend.setEnabled(true);
-//                    btnSend.setSelected(true);
-//                } else {
-//                    btnSend.setEnabled(false);
-//                    btnSend.setSelected(false);
-//                }
-//            }
-//
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {
-//
-//            }
-//        });
-//
-//        //
-//        pubSubMessageListener = new PubSubMessageListener() {
-//            @Override
-//            public void onMessageReceived(PubSubMessage message) {
-//                messageAdapter.addItem(message);
-//                messageRcv.scrollToPosition(messageAdapter.getItemCount() - 1);
-//            }
-//        };
-//
-//        // Subscribe for 'CHAT' topic
-//        List<PubSubMessage> pubSubMessageList = meeting.pubSub.subscribe("CHAT", pubSubMessageListener);
-//
-//        //
-//        messageAdapter = new MessageAdapter(this, R.layout.item_message_list, pubSubMessageList, meeting);
-//        messageRcv.setAdapter(messageAdapter);
-//        messageRcv.addOnLayoutChangeListener((view, i, i1, i2, i3, i4, i5, i6, i7) ->
-//                messageRcv.scrollToPosition(messageAdapter.getItemCount() - 1));
-//
-//        v3.findViewById(R.id.btnSend).setOnClickListener(view -> {
-//            String message = etmessage.getText().toString();
-//            if (!message.equals("")) {
-//                PubSubPublishOptions publishOptions = new PubSubPublishOptions();
-//                publishOptions.setPersist(true);
-//
-//                meeting.pubSub.publish("CHAT", message, publishOptions);
-//                etmessage.setText("");
-//            } else {
-//                Toast.makeText(OneToOneCallActivity.this, "Please Enter Message",
-//                        Toast.LENGTH_SHORT).show();
-//            }
-//
-//        });
-//
-//
-//        close = v3.findViewById(R.id.ic_close);
-//        bottomSheetDialog.show();
-//        close.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                bottomSheetDialog.dismiss();
-//            }
-//        });
-//
-//        bottomSheetDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-//            @Override
-//            public void onDismiss(DialogInterface dialog) {
-//                meeting.pubSub.unsubscribe("CHAT", pubSubMessageListener);
-//            }
-//        });
-//
-//    }
     private void setMicButtonListener() {
         ImageButton btnMic = findViewById(R.id.btnMic);
         btnMic.setOnClickListener(view -> {
@@ -640,22 +559,33 @@ public class MeetingActivity extends AppCompatActivity  {
 
 
 
-
     @Override
-    protected void onDestroy() {
-        unregisterReceiver(bluetoothReceiver);
-        localView.release();
-        remoteView.release();
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
     }
 
-//    @Override
-//    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//
-//    }
-//
-//    @Override
-//    public void onNothingSelected(AdapterView<?> parent) {
-//
-//    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+
+@Override
+protected void onDestroy() {
+    unregisterReceiver(bluetoothReceiver);
+    if (localView != null) {
+        localView.release();
+    }
+    if (remoteView != null) {
+        remoteView.release();
+    }
+    if (meeting != null) {
+        meeting.end();
+    }
+
+    super.onDestroy();
+
+}
+
+
 }

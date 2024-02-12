@@ -296,13 +296,24 @@ public class JoinActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         Log.d("JoinActivity", "onPause - Activity is going into the background");
+    }
 
+    @Override
+    protected void onStart() {
+        mainRepository.setMyStatus(StatusType.Idle);
+        super.onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        mainRepository.setMyStatus(StatusType.Idle);
+        super.onRestart();
 
     }
 
     @Override
     protected void onResume() {
-        mainRepository.setMyStatus(StatusType.Idle);
+        MainRepository.getInstance().setMyStatus(StatusType.Idle);
         super.onResume();
         Log.d("JoinActivity", "onResume - Activity is coming back into the foreground");
         participantName.setText("");
